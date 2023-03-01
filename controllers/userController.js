@@ -24,7 +24,7 @@ module.exports = {
             .then((user) => res.json(user))
             .catch((err) => res.status(500).json(err));
     },
-    
+
     // update a user by id
     updateUser(req, res) {
         user.findOneAndUpdate(
@@ -43,7 +43,7 @@ module.exports = {
             });
     },
 
-    // Delete a user and associated apps
+    // Delete a user and associated id
     deleteUser(req, res) {
         user.findOneAndDelete({ _id: req.params.userId })
             .then((user) =>
@@ -53,5 +53,35 @@ module.exports = {
             )
             .then(() => res.json({ message: 'User and associated thoughts deleted!' }))
             .catch((err) => res.status(500).json(err));
+    },
+
+    // add friend
+    addFriend(req, res) {
+        User.findOneAndUpdate(
+            { _id: params.userId },
+            { $addToSet: { friends: params.friendId } },
+            { new: true, runValidators: true }
+        )
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: "No user with this id" })
+                    : res.json(user)
+            )
+            .catch((err) => res.json(err));
+    },
+
+    // remove friend
+    removeFriend(req, res) {
+        User.findOneAndUpdate(
+            { _id: params.userId },
+            { $pull: { friends: params.friendId } },
+            { new: true, runValidators: true }
+        )
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: "No friend with this id" })
+                    : res.json(user)
+            )
+            .catch((err) => res.json(err));
     },
 };
