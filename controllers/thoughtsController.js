@@ -8,6 +8,7 @@ module.exports = {
             .then((thoughts) => res.json(thoughts))
             .catch((err) => res.status(500).json(err));
     },
+
     // Gets a single thoughts using the findOneAndUpdate method. We pass in the ID of the thoughts and then respond with it, or an error if not found
     getSingleThoughts(req, res) {
         Thoughts.findOne({ _id: req.params.thoughtsId })
@@ -18,6 +19,7 @@ module.exports = {
             )
             .catch((err) => res.status(500).json(err));
     },
+
     // Creates a new thoughts. Accepts a request body with the entire Thoughts object.
     // Because thoughts are associated with Users, we then update the User who created the app and add the ID of the thoughts to the thoughts array
     createThoughts(req, res) {
@@ -41,6 +43,7 @@ module.exports = {
                 res.status(500).json(err);
             });
     },
+
     // Updates and thoughts using the findOneAndUpdate method. Uses the ID, and the $set operator in mongodb to inject the request body. Enforces validation.
     updateThoughts(req, res) {
         Thoughts.findOneAndUpdate(
@@ -58,6 +61,7 @@ module.exports = {
                 res.status(500).json(err);
             });
     },
+
     // Deletes an thoughts from the database. Looks for an app by ID.
     // Then if the app exists, we look for any users associated with the app based on he app ID and update the thoughts array for the User.
     deleteThoughts(req, res) {
@@ -79,5 +83,31 @@ module.exports = {
                     : res.json({ message: 'Thoughts successfully deleted!' })
             )
             .catch((err) => res.status(500).json(err));
-    }
+    },
+
+    // add reaction
+    addReaction(req, res) {
+        Thoughts.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $addToSet: { reactions: body } },
+            { new: true, runValidators: true }
+        )
+            .then((user) =>
+                !user
+                    ? res.status(404).json({ message: "No thought with this id" })
+                    : res.json({ message: 'Reaction added!' })
+            )
+            .catch((err) => res.json(err));
+    },
+
+    // delete reaction
+    removeReaction( req, res) {
+        Thoughts.findOneAndUpdate(
+            { _id: req.params.thoughtId },
+            { $pull: { reactions: { reactionId: params.reactionId } } },
+            { new: true }
+        )
+            .then((dbThoughtData) => res.json(dbThoughtData))
+            .catch((err) => res.json(err));
+    },
 };
